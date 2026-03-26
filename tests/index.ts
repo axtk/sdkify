@@ -1,4 +1,4 @@
-import { serve } from "@t8/serve";
+import { serve } from "auxsrv";
 import { RequestError } from "../src/RequestError.ts";
 import { RequestService } from "../src/RequestService.ts";
 import type { RequestHandler } from "../src/types/RequestHandler.ts";
@@ -80,7 +80,9 @@ function toHTMLTitle(title: string) {
 
 (async () => {
   let server = await serve({
-    path: "tests",
+    path: import.meta.url,
+    bundle: false,
+    spa: false,
   });
 
   await test("getRequestAction() + 'HTTPMethod path' target", () => {

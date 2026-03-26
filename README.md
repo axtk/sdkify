@@ -1,4 +1,4 @@
-# T8 SDK Factory
+# sdkify
 
 Typed SDK factory for web APIs
 
@@ -6,12 +6,12 @@ Typed SDK factory for web APIs
 - Environment-agnostic interface
 - Zero dependencies
 
-## `RequestService`
+## RequestService
 
 The `RequestService` class helps create a thin type-safe entrypoint to an API:
 
 ```ts
-import { RequestService } from "@t8/sdk-factory";
+import { RequestService } from "sdkify";
 
 let service = new RequestService<APISchema>(requestHandler);
 ```
@@ -44,7 +44,7 @@ let { ok, status, body } = await service.send("GET /items");
 The `APISchema` type used with the [`RequestService`](#requestservice) constructor is a custom schema outlining the types of requests and responses within an API. The example below shows what such a schema may look like.
 
 ```ts
-import type { Schema } from "@t8/sdk-factory";
+import type { Schema } from "sdkify";
 
 // Wrapping into the `Schema` generic type is optional, but
 // this helps validate the basic schema structure
@@ -155,7 +155,7 @@ import {
   RequestService,
   getRequestAction,
   toStringValueMap,
-} from "@t8/sdk-factory";
+} from "sdkify";
 import type { APISchema } from "./APISchema";
 
 function getRequestHandler(endpoint: string): RequestHandler {
@@ -207,7 +207,7 @@ Fine-grained schema-based validation of the request and response can be implemen
     RequestService,
     getRequestAction,
     toStringValueMap,
-  } from "@t8/sdk-factory";
+  } from "sdkify";
 - import type { APISchema } from "./APISchema";
 + import { apiSchema, type APISchema } from "./apiSchema"; // defined with Zod
 

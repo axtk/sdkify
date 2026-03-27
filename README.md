@@ -6,6 +6,8 @@ Typed SDK factory for web APIs
 - Environment-agnostic interface
 - Zero dependencies
 
+Contents: [RequestService](#requestservice) · [Schema definition](#schema-definition) · [Shorthand methods](#shorthand-methods) · [Splitting into scopes](#splitting-into-scopes) · [Custom request handler](#custom-request-handler) · [Runtime validation](#runtime-validation)
+
 ## RequestService
 
 The `RequestService` class helps create a thin type-safe entrypoint to an API:
@@ -81,13 +83,15 @@ export type APISchema = Schema<{
 
 ⬥ Schema keys should be unique strings, not necessarily a pair of an HTTP method and a path, as in the example above, but this is a handy naming convention for an HTTP API. If a schema key doesn't match this pattern, `method` and `path` (or `url`) have to be explicitly specified in the schema entry.
 
-With such a schema assigned to `service`, calls to its `send()` method will be prevalidated against this schema, which means that a type-aware IDE will warn of type mismatches or typos in the parameters:
+With such a schema assigned to `service`, calls to its `send()` method will be prevalidated against this schema at compile time, which also means that a type-aware IDE will warn of type mismatches or typos in the parameters:
 
 ```ts
 let { ok, status, body } = await service.send("GET /items/:id", {
+       // ▾ { id: number }
   params: {
     id: 10,
   },
+      // ▾ { mode?: "compact" | "full" }
   query: {
     mode: "full",
   },
@@ -112,16 +116,22 @@ With such a mapping in place, `service.send("GET /items/:id", { ... })` has anot
 
 ```ts
 let response = await api.getItem({
+       // ▾ { id: number }
   params: {
     id: 10,
   },
+      // ▾ { mode?: "compact" | "full" }
   query: {
     mode: "full",
   },
 });
 ```
 
-The `getEntry()` method doesn't have to take all the API schema keys at once. The API methods can be split into logical scopes:
+⬥ For API methods controlled only with query parameters without path placeholders, there's also another way to define custom methods: `getQueryEntry()`. It can be used similarly to `getEntry()` above, but the returned methods will only accept query parameters without the need to nest them into the `query` key.
+
+## Splitting into scopes
+
+The `getEntry()` method described above doesn't have to take all of the API schema keys at once. The API methods can be split into logical scopes:
 
 ```ts
 let api = {
@@ -139,8 +149,6 @@ let api = {
 let userList = await api.users.getList();
 let firstUser = await api.users.getInfo({ params: { id: userList[0].id } });
 ```
-
-For API methods controlled only with query parameters without path placeholders, there's another shorthand method: `getQueryEntry()`. It can be used similarly to `getEntry()` above, but the returned methods will only accept query parameters without the need to nest them into the `query` key.
 
 ## Custom request handler
 
@@ -196,9 +204,9 @@ export const browserService = new RequestService<APISchema>(
 
 To meet the needs of a specific use case, the request handler's code can certainly depart from the example above (which is the primary reason why it's not hardwired into the package).
 
-## Schema-based validation
+## Runtime validation
 
-Fine-grained schema-based validation of the request and response can be implemented with a custom request handler. Here's how the basic JSON request handler from the [previous section](#custom-request-handler) can be modified to validate its input and output with Zod or, similarly, with another validation lib:
+Runtime validation of the request and response can be implemented within a custom request handler discussed above. Here's how the basic JSON request handler from the [previous section](#custom-request-handler) can be modified to validate its input and output with Zod or, similarly, with another validation lib:
 
 ```diff
   import {

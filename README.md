@@ -15,7 +15,7 @@ The `RequestService` class helps create a thin type-safe entrypoint to an API:
 ```ts
 import { RequestService } from "sdkify";
 
-let service = new RequestService<APISchema>(requestHandler);
+const service = new RequestService<APISchema>(requestHandler);
 ```
 
 The constructor accepts a custom `requestHandler`. A specific request handler isn't built into the package, since it can vary in many ways depending on the purpose and environment of the application: it can make use of `fetch`, `axios`, logging, default headers, or whatever necessary.
@@ -27,18 +27,18 @@ The purpose of `RequestService` is to offer a single environment-agnostic interf
 ⬥ The environment-agnostic interface works consistently throughout the client and the server:
 
 ```ts
-let service = new RequestService<APISchema>(browserHandler);
+const service = new RequestService<APISchema>(browserHandler);
 ```
 
 ```ts
-let service = new RequestService<APISchema>(serverHandler);
+const service = new RequestService<APISchema>(serverHandler);
 ```
 
 The same API with different environment-specific request handlers under the hood results in reusable isomorphic code:
 
 ```ts
 // browser or server
-let { ok, status, body } = await service.send("GET /items");
+const { ok, status, body } = await service.send("GET /items");
 ```
 
 ## Schema definition
@@ -86,7 +86,7 @@ export type APISchema = Schema<{
 With such a schema assigned to `service`, calls to its `send()` method will be prevalidated against this schema at compile time, which also means that a type-aware IDE will warn of type mismatches or typos in the parameters:
 
 ```ts
-let { ok, status, body } = await service.send("GET /items/:id", {
+const { ok, status, body } = await service.send("GET /items/:id", {
        // ▾ { id: number }
   params: {
     id: 10,
@@ -105,7 +105,7 @@ The options passed as the second parameter to `send()` are validated as `APISche
 The API schema keys can be mapped to custom method names:
 
 ```ts
-let api = service.getEntry({
+const api = service.getEntry({
   getItems: "GET /items",
   getItem: "GET /items/:id",
   setItem: "POST /items/:id",
@@ -115,7 +115,7 @@ let api = service.getEntry({
 With such a mapping in place, `service.send("GET /items/:id", { ... })` has another equivalent form:
 
 ```ts
-let response = await api.getItem({
+const response = await api.getItem({
        // ▾ { id: number }
   params: {
     id: 10,
@@ -134,7 +134,7 @@ let response = await api.getItem({
 The `getEntry()` method described above doesn't have to take all of the API schema keys at once. The API methods can be split into logical scopes:
 
 ```ts
-let api = {
+const api = {
   users: service.getEntry({
     getList: "GET /users",
     getInfo: "GET /users/:id",
@@ -146,8 +146,8 @@ let api = {
   }),
 };
 
-let userList = await api.users.getList();
-let firstUser = await api.users.getInfo({ params: { id: userList[0].id } });
+const userList = await api.users.getList();
+const firstUser = await api.users.getInfo({ params: { id: userList[0].id } });
 ```
 
 ## Custom request handler
@@ -168,20 +168,20 @@ import type { APISchema } from "./APISchema";
 
 function getRequestHandler(endpoint: string): RequestHandler {
   return async function(target, request) {
-    let { method, url } = getRequestAction({ request, target, endpoint });
+    const { method, url } = getRequestAction({ request, target, endpoint });
 
-    let response = await fetch(url, {
+    const response = await fetch(url, {
       method,
       headers: toStringValueMap(request?.headers),
       body: request?.body ? JSON.stringify(request?.body) : null,
     });
 
-    let { ok, status, statusText } = response;
+    const { ok, status, statusText } = response;
 
     if (!ok) throw new RequestError({ status, statusText });
 
     try {
-      let body = await response.json();
+      const body = await response.json();
 
       return { ok, status, statusText, body };
     }
@@ -228,20 +228,20 @@ Runtime validation of the request and response can be implemented within a custo
 +       throw new RequestError({ statusText: "Invalid request data" });
 +     }
 
-      let { method, url } = getRequestAction({ request, target, endpoint });
+      const { method, url } = getRequestAction({ request, target, endpoint });
 
-      let response = await fetch(url, {
+      const response = await fetch(url, {
         method,
         headers: toStringValueMap(request?.headers),
         body: request?.body ? JSON.stringify(request?.body) : null,
       });
 
-      let { ok, status, statusText } = response;
+      const { ok, status, statusText } = response;
 
       if (!ok) throw new RequestError({ status, statusText });
 
       try {
-        let body = await response.json();
+        const body = await response.json();
 
 +       try {
 +         schema[target]?.response?.parse(body);
